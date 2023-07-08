@@ -30,9 +30,10 @@ jobs:
         run: go mod tidy && go run .
       - name: Configure Git
         run: |
-          git config user.name "workflow"
+          git config user.name "uiltjesrups"
           git config user.email "uiltjesrups@gmail.com"
       - name: Commit file
         run: |
           git add index.html
           git commit -m "Update index.html"
+          git push
