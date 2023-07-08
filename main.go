@@ -9,5 +9,4 @@ func main() {
 	venues := []concerts.ConcertProvider{concerts.Occii}
 	concerts := concerts.Gather(venues)
 	html.WriteHTML(concerts)
-
 }

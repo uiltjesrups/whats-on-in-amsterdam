@@ -1,7 +1,7 @@
 package concerts
 
 import (
-	"fmt"
+	"log"
 	"time"
 )
 
@@ -17,16 +17,16 @@ type Concert struct {
 }
 
 type ConcertProvider interface {
-	GetConcerts() ([]Concert, error)
+	GetConcerts() []Concert
 }
 
 func Gather(concertProvider []ConcertProvider) []Concert {
 	concertsAllVenues := []Concert{}
+
 	for _, venue := range concertProvider {
-		fmt.Println("Venue: ", venue)
-		concerts, _ := venue.GetConcerts()
+		concerts := venue.GetConcerts()
 		for _, concert := range concerts {
-			fmt.Println("append concert: ", concert.Venue)
+			log.Println("Gather: ", concert)
 			concertsAllVenues = append(concertsAllVenues, concert)
 		}
 	}
