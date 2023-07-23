@@ -32,7 +32,7 @@ func (zaal100 Zaal100) GetConcerts() []Concert {
 		return title
 	}
 
-	parseDate := func(day, month, year string) time.Time {
+	parseDate := func(day, month, year string) (time.Time, error) {
 		if year == "" {
 			year = strconv.Itoa(time.Now().Year())
 		}
@@ -40,16 +40,20 @@ func (zaal100 Zaal100) GetConcerts() []Concert {
 		dateStr := fmt.Sprintf("%s-%s-%s", year, month, day)
 		t, err := time.Parse(layout, dateStr)
 		if err != nil {
-			log.Fatal(err)
+			return time.Time{}, err
 		}
-		return t
+		return t, nil
 	}
 
-	getDate := func(s *goquery.Selection) time.Time {
+	getDate := func(s *goquery.Selection) (time.Time, error) {
 		month := s.Find("span.maand").Text()
 		day := s.Find("span.datum").Text()
 		year := strconv.Itoa(time.Now().Year())
-		return parseDate(day, month, year)
+		t, err := parseDate(day, month, year)
+		if err != nil {
+			return time.Time{}, err
+		}
+		return t, nil
 	}
 
 	// Use the CSS selector to select the element
@@ -59,9 +63,17 @@ func (zaal100 Zaal100) GetConcerts() []Concert {
 	// Iterate over the selected elements and print their text
 	agendaItems.Each(func(i int, s *goquery.Selection) {
 		title := getTitle(s)
-		date := getDate(s)
-		concerts = append(concerts, Concert{Description: title, Date: date,
-			Venue: Venue(zaal100)})
+		date, err := getDate(s)
+		if err != nil {
+			log.Printf("getConcerts: title: %s, error: %s",
+				title,
+				err)
+		} else {
+			concerts = append(concerts,
+				Concert{Description: title,
+					Date:  date,
+					Venue: Venue(zaal100)})
+		}
 	})
 	return concerts
 }
