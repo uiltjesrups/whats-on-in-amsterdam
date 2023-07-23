@@ -10,16 +10,13 @@ import (
 
 type OCCII Venue
 
-var Occii = OCCII{
-	Name: "OCCI",
-	Url:  "https://occii.org/"}
-
 func (occii OCCII) GetConcerts() []Concert {
 	resp, err := http.Get(occii.Url)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer resp.Body.Close()
+
 	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
 		log.Fatal(err)
