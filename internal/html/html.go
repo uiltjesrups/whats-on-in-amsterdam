@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"sort"
 	"text/template"
 	"time"
 
@@ -35,7 +36,15 @@ func groupConcertsByDate(concerts []concerts.Concert) groupedConcerts {
 
 	for _, concert := range concerts {
 		date := concert.Date.UTC().Truncate(24 * time.Hour)
-		groupedConcerts[date] = append(groupedConcerts[date], concert)
+		concerts := append(groupedConcerts[date], concert)
+
+		groupedConcerts[date] = concerts
+	}
+
+	for _, concerts := range groupedConcerts {
+		sort.Slice(concerts, func(i, j int) bool {
+			return concerts[i].Date.Before(concerts[j].Date)
+		})
 	}
 
 	return groupedConcerts
