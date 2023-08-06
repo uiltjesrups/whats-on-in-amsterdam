@@ -4,6 +4,8 @@ import (
 	"log"
 	"sort"
 	"time"
+
+	"github.com/uiltjesrups/whats-on-in-amsterdam/internal/utils"
 )
 
 type Venue struct {
@@ -42,9 +44,11 @@ func GroupConcertsByDate(concerts []Concert) GroupedConcerts {
 
 	for _, concert := range concerts {
 		date := concert.Date.UTC().Truncate(24 * time.Hour)
-		concerts := append(groupedConcerts[date], concert)
-
-		groupedConcerts[date] = concerts
+		today := utils.CurrentDate()
+		if date.After(today) || date.Equal(today) {
+			concerts := append(groupedConcerts[date], concert)
+			groupedConcerts[date] = concerts
+		}
 	}
 
 	for _, concerts := range groupedConcerts {

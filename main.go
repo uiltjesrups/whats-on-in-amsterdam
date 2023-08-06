@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/uiltjesrups/whats-on-in-amsterdam/internal/concerts"
 	"github.com/uiltjesrups/whats-on-in-amsterdam/internal/config"
+	"github.com/uiltjesrups/whats-on-in-amsterdam/internal/html"
 	"github.com/uiltjesrups/whats-on-in-amsterdam/internal/mastodon"
+	"github.com/uiltjesrups/whats-on-in-amsterdam/internal/utils"
 )
 
 func main() {
@@ -18,7 +19,9 @@ func main() {
 	}
 	concerts := concerts.GroupConcertsByDate(concerts.Gather(venues))
 
-	for _, concert := range concerts[currentDate()] {
+	html.WriteHTML(concerts)
+
+	for _, concert := range concerts[utils.CurrentDate()] {
 		message := fmt.Sprintf("Today at %s: %s - %s\n%s\n%s",
 			concert.Venue.Name,
 			concert.Description,
@@ -28,16 +31,4 @@ func main() {
 		mastodon.Post(config, message)
 	}
 
-}
-
-func currentDate() time.Time {
-	currentTime := time.Now()
-	currentDate := currentTime.UTC().Truncate(24 * time.Hour)
-	return currentDate
-}
-
-func addOneDay(date time.Time) time.Time {
-	oneDay := 24 * time.Hour
-	newDate := date.Add(oneDay)
-	return newDate
 }
