@@ -4,7 +4,6 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"sort"
 	"text/template"
 	"time"
 
@@ -26,31 +25,10 @@ func readTemplate() string {
 
 type TemplateData struct {
 	CurrentTime     time.Time
-	GroupedConcerts groupedConcerts
+	GroupedConcerts concerts.GroupedConcerts
 }
 
-type groupedConcerts map[time.Time][]concerts.Concert
-
-func groupConcertsByDate(concerts []concerts.Concert) groupedConcerts {
-	groupedConcerts := make(groupedConcerts)
-
-	for _, concert := range concerts {
-		date := concert.Date.UTC().Truncate(24 * time.Hour)
-		concerts := append(groupedConcerts[date], concert)
-
-		groupedConcerts[date] = concerts
-	}
-
-	for _, concerts := range groupedConcerts {
-		sort.Slice(concerts, func(i, j int) bool {
-			return concerts[i].Date.Before(concerts[j].Date)
-		})
-	}
-
-	return groupedConcerts
-}
-
-func WriteHTML(concerts []concerts.Concert) {
+func WriteHTML(concerts concerts.GroupedConcerts) {
 	tmpl := template.Must(template.New("html").Parse(readTemplate()))
 
 	file, err := os.Create("index.html")
@@ -61,7 +39,7 @@ func WriteHTML(concerts []concerts.Concert) {
 
 	err = tmpl.Execute(file,
 		TemplateData{CurrentTime: time.Now(),
-			GroupedConcerts: groupConcertsByDate(concerts),
+			GroupedConcerts: concerts,
 		},
 	)
 	if err != nil {

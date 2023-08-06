@@ -2,6 +2,7 @@ package concerts
 
 import (
 	"log"
+	"sort"
 	"time"
 )
 
@@ -32,4 +33,25 @@ func Gather(concertProvider []ConcertProvider) []Concert {
 	}
 
 	return concertsAllVenues
+}
+
+type GroupedConcerts map[time.Time][]Concert
+
+func GroupConcertsByDate(concerts []Concert) GroupedConcerts {
+	groupedConcerts := make(GroupedConcerts)
+
+	for _, concert := range concerts {
+		date := concert.Date.UTC().Truncate(24 * time.Hour)
+		concerts := append(groupedConcerts[date], concert)
+
+		groupedConcerts[date] = concerts
+	}
+
+	for _, concerts := range groupedConcerts {
+		sort.Slice(concerts, func(i, j int) bool {
+			return concerts[i].Date.Before(concerts[j].Date)
+		})
+	}
+
+	return groupedConcerts
 }

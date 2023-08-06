@@ -67,8 +67,6 @@ func getTime(s *goquery.Selection) (time.Time, error) {
 		return time.Time{}, err
 	}
 
-	fmt.Println("Parsed Time:", date.Format("15:04"))
-
 	return date, nil
 }
 

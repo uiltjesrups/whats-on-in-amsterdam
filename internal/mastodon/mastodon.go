@@ -8,7 +8,8 @@ import (
 	"github.com/uiltjesrups/whats-on-in-amsterdam/internal/config"
 )
 
-func Post(config config.Config) {
+func Post(config config.Config, status string) {
+	log.Println("Post: ", status)
 	c := mastodon.NewClient(&mastodon.Config{
 		Server:       config.Mastodon.Server,
 		ClientID:     config.Mastodon.ClientID,
@@ -23,7 +24,7 @@ func Post(config config.Config) {
 	}
 
 	toot := mastodon.Toot{
-		Status: "HI!",
+		Status: status,
 	}
 
 	_, err = c.PostStatus(context.Background(), &toot)
