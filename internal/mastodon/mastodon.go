@@ -1,44 +1,34 @@
-package main
+package mastodon
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/mattn/go-mastodon"
+	"github.com/uiltjesrups/whats-on-in-amsterdam/internal/config"
 )
 
-func main() {
+func Post(config config.Config) {
 	c := mastodon.NewClient(&mastodon.Config{
-		Server:       "https://mastodon.social",
-		ClientID:     "weY3vAdXHQSV69eL77mmeT9e-hJJIFoCnTXzJ9SZngc",
-		ClientSecret: "d5rzLBuwLWVRjiUm2dnhRGlupXzAvqtLySDPzYqEhpg",
+		Server:       config.Mastodon.Server,
+		ClientID:     config.Mastodon.ClientID,
+		ClientSecret: config.Mastodon.ClientSecret,
 	})
 
 	err := c.Authenticate(context.Background(),
-		"h6jjcefu5l0475dt@sinenomine.email",
-		"LOB5DReheFkV5YSS")
+		config.Mastodon.Email,
+		config.Mastodon.Password)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	toot := mastodon.Toot{
-		Status: "hi there!",
+		Status: "HI!",
 	}
 
-	s, err := c.PostStatus(context.Background(), &toot)
+	_, err = c.PostStatus(context.Background(), &toot)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println(s)
-
-	timeline, err := c.GetTimelineHome(context.Background(), nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	for i := len(timeline) - 1; i >= 0; i-- {
-		fmt.Println(timeline[i])
-	}
-	fmt.Print("hi")
 }
