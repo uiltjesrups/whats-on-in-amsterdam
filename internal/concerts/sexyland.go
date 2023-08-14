@@ -70,19 +70,6 @@ func getTime(s *goquery.Selection) (time.Time, error) {
 	return date, nil
 }
 
-func nextractDate(s *goquery.Selection) (time.Time, error) {
-	// Define the date layout based on the input format
-	layout := "/calendar/2006/01/02/?e=1042"
-
-	// Parse the input string using the defined layout
-	date, err := time.Parse(layout, s.AttrOr("data-date", ""))
-	if err != nil {
-		return time.Time{}, err
-	}
-
-	return date, nil
-}
-
 func extractDate(s *goquery.Selection) (time.Time, error) {
 	// Check if the input string has the required format
 	d := s.AttrOr("data-date", "")
