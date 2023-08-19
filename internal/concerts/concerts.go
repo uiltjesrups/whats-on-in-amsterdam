@@ -9,8 +9,13 @@ import (
 )
 
 type Venue struct {
-	Name string
-	Url  string
+	Name            string
+	Url             string
+	ConcertProvider ConcertProvider
+}
+
+type ConcertProvider interface {
+	GetConcerts() []Concert
 }
 
 type Concert struct {
@@ -19,8 +24,12 @@ type Concert struct {
 	Venue       Venue
 }
 
-type ConcertProvider interface {
-	GetConcerts() []Concert
+type titleProvider interface {
+	getTitle() (string, error)
+}
+
+type dateProvider interface {
+	getDate() (time.Time, error)
 }
 
 func Gather(concertProvider []ConcertProvider) []Concert {

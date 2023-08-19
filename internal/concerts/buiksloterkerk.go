@@ -12,36 +12,23 @@ import (
 
 type Buiksloterkerk Venue
 
-func (venue Buiksloterkerk) GetConcerts() []Concert {
-	resp, err := http.Get(venue.Url)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer resp.Body.Close()
-
-	doc, err := goquery.NewDocumentFromReader(resp.Body)
-	if err != nil {
-		log.Fatal("GetConcerts", err)
-	}
-
-	agendaItems := doc.Find("div.card-body")
-
-	getTitle := func(s *goquery.Selection) (string, error) {
-		title := s.Find("h5").Text()
-		if title == "" {
-			html, err := s.Html()
-			if err != nil {
-				return "",
-					fmt.Errorf("getTitle: title not found, selection: %s", err)
-
-			}
+func (venue Buiksloterkerk) getTitle(s *goquery.Selection) (string, error) {
+	title := s.Find("h5").Text()
+	if title == "" {
+		html, err := s.Html()
+		if err != nil {
 			return "",
-				fmt.Errorf("getTitle: title not found, selection: %s", html)
-		}
+				fmt.Errorf("getTitle: title not found, selection: %s", err)
 
-		return strings.TrimSpace(title), nil
+		}
+		return "",
+			fmt.Errorf("getTitle: title not found, selection: %s", html)
 	}
 
+	return strings.TrimSpace(title), nil
+}
+
+func (venue Buiksloterkerk) getDate(s *goquery.Selection) (time.Time, error) {
 	parseDateTime := func(input string) (time.Time, error) {
 		layout := "2 January 2006 om 15:04"
 		trimmedInput := strings.TrimSpace(input)
@@ -67,50 +54,62 @@ func (venue Buiksloterkerk) GetConcerts() []Concert {
 
 		return parsedTime, nil
 	}
-
-	getDate := func(s *goquery.Selection) (time.Time, error) {
-		date := s.Find("h6").Text()
-		if date == "" {
-			html, err := s.Html()
-			if err != nil {
-				return time.Time{},
-					fmt.Errorf("getDateB: date not found, selection: %s", err)
-
-			}
+	date := s.Find("h6").Text()
+	if date == "" {
+		html, err := s.Html()
+		if err != nil {
 			return time.Time{},
-				fmt.Errorf("getTitle: title not found, selection: %s", html)
-		}
+				fmt.Errorf("getDateB: date not found, selection: %s", err)
 
-		datetime, err := parseDateTime(date)
-		if err != nil {
-			return time.Time{}, err
 		}
-		return datetime, nil
+		return time.Time{},
+			fmt.Errorf("getTitle: title not found, selection: %s", html)
 	}
 
-	processAgendaItem := func(venue Buiksloterkerk, s *goquery.Selection, concerts *[]Concert) {
-		date, err := getDate(s)
-
-		if err != nil {
-			log.Printf("processAgendaItem: extractdate: %s, error: %s", date, err)
-			return
-		}
-		title, err := getTitle(s)
-		if err != nil {
-			log.Printf("processAgendaItem: title: %s, error: %s", title, err)
-			return
-		}
-
-		*concerts = append(*concerts, Concert{
-			Description: title,
-			Date:        date,
-			Venue:       Venue(venue),
-		})
+	datetime, err := parseDateTime(date)
+	if err != nil {
+		return time.Time{}, err
 	}
+	return datetime, nil
+}
+
+func (venue Buiksloterkerk) processAgendaItem(s *goquery.Selection, concerts *[]Concert) {
+	date, err := venue.getDate(s)
+
+	if err != nil {
+		log.Printf("processAgendaItem: extractdate: %s, error: %s", date, err)
+		return
+	}
+	title, err := venue.getTitle(s)
+	if err != nil {
+		log.Printf("processAgendaItem: title: %s, error: %s", title, err)
+		return
+	}
+
+	*concerts = append(*concerts, Concert{
+		Description: title,
+		Date:        date,
+		Venue:       Venue(venue),
+	})
+}
+
+func (venue Buiksloterkerk) GetConcerts() []Concert {
+	resp, err := http.Get(venue.Url)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	if err != nil {
+		log.Fatal("GetConcerts", err)
+	}
+
+	agendaItems := doc.Find("div.card-body")
 
 	concerts := []Concert{}
 	agendaItems.Each(func(i int, s *goquery.Selection) {
-		processAgendaItem(venue, s, &concerts)
+		venue.processAgendaItem(s, &concerts)
 	})
 	return concerts
 }
