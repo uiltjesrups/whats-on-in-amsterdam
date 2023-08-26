@@ -18,6 +18,7 @@ func main() {
 		concerts.Sexyland{Name: "SexyLand", Url: "https://www.sexyland.world"},
 		concerts.Buiksloterkerk{Name: "Buiksloterkerk", Url: "https://buiksloterkerk.nl/agenda"},
 		concerts.Orgelpark{Name: "Orgelpark", Url: "https://www.orgelpark.nl/nl/Agenda"},
+		concerts.Roodebioscoop{Name: "De Roode Bioscoop", Url: "https://www.roodebioscoop.nl"},
 	}
 	concerts := concerts.GroupConcertsByDate(concerts.Gather(venues))
 
